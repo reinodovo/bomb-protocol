@@ -39,7 +39,7 @@ int code();
 
 int speed();
 char *timeStr(bool);
-unsigned long timeToStart();
+char *timeStrToStart();
 unsigned long timeToNextSecond();
 } // namespace MainModule
 

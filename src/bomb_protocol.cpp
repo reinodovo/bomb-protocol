@@ -1,12 +1,14 @@
 #include <bomb_protocol.h>
 
 Callbacks _callbacks;
+ModuleType _type;
 
 void onDataRecv(const uint8_t *mac, const uint8_t *incoming_data, int len);
 MessageType getMessageInfo(const uint8_t *incoming_data, int len);
 
-bool initProtocol(Callbacks callbacks) {
+bool initProtocol(Callbacks callbacks, ModuleType type) {
   _callbacks = callbacks;
+  _type = type;
   WiFi.mode(WIFI_STA);
   if (esp_now_init() != ESP_OK)
     return false;
@@ -93,14 +95,15 @@ void onResetAckRecv(const uint8_t *mac, const uint8_t *incoming_data, int len) {
 
 void onHeartbeatRecv(const uint8_t *mac, const uint8_t *incoming_data,
                      int len) {
-  send(HEARTBEAT_ACK, mac);
+  send(HEARTBEAT_ACK, _type, mac);
 }
 
 void onHeartbeatAckRecv(const uint8_t *mac, const uint8_t *incoming_data,
                         int len) {
+  ModuleType type = (ModuleType)incoming_data[1];
   if (_callbacks.heartbeatAckCallback == nullptr)
     return;
-  _callbacks.heartbeatAckCallback(mac);
+  _callbacks.heartbeatAckCallback(type, mac);
 }
 
 void onDataRecv(const uint8_t *mac, const uint8_t *incoming_data, int len) {
@@ -212,5 +215,12 @@ esp_err_t send(SolveAttemptAck info, const uint8_t *mac) {
   uint8_t message[sizeof(info) + 1];
   message[0] = SOLVE_ATTEMPT_ACK;
   memcpy(message + 1, &info, sizeof(info));
+  return esp_now_send(mac, message, sizeof(message));
+}
+
+esp_err_t send(MessageType type, ModuleType module_type, const uint8_t *mac) {
+  uint8_t message[2];
+  message[0] = type;
+  message[1] = (uint8_t)module_type;
   return esp_now_send(mac, message, sizeof(message));
 }

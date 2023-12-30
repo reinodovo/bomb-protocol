@@ -15,6 +15,7 @@ esp_now_peer_info_t modules[MAX_MODULES];
 bool modules_solved[MAX_MODULES];
 bool modules_started[MAX_MODULES];
 bool modules_reset[MAX_MODULES];
+ModuleType modules_types[MAX_MODULES];
 int modules_connected = 0;
 
 OnSolved onSolved = nullptr;
@@ -79,12 +80,8 @@ bool starting() {
   return !started() && _should_start_at != 0 && millis() > _should_start_at;
 }
 
-bool onStartCountdown() { return _should_start_at != 0; }
-
-unsigned long timeToStart() {
-  if (!onStartCountdown())
-    return 0;
-  return (_should_start_at - millis()) / ONE_SECOND;
+bool onStartCountdown() {
+  return !started() && !starting() && _should_start_at != 0;
 }
 
 int strikes() { return _strikes; }
@@ -135,6 +132,10 @@ char *remainingTimeString(unsigned long elapsed, unsigned long duration,
   return result;
 }
 
+char *timeStrToStart() {
+  return remainingTimeString(millis(), max(millis(), _should_start_at), true);
+}
+
 char *timeStr(bool show_millis = true) {
   return remainingTimeString(elapsedTime(), _duration, show_millis);
 }
@@ -147,7 +148,22 @@ BombInfo bombInfo() {
   strcpy(info.time, str);
   delete[] str;
   info.strikes = _strikes;
+  info.max_strikes = _max_strikes;
   info.code = _code;
+  info.failed = failed();
+  info.solved = solved();
+  info.total_puzzle_modules = 0;
+  info.solved_puzzle_modules = 0;
+  info.total_needy_modules = 0;
+  for (int i = 0; i < modules_connected; i++) {
+    if (modules_types[i] == Puzzle) {
+      info.total_puzzle_modules++;
+      if (modules_solved[i])
+        info.solved_puzzle_modules++;
+    }
+    if (modules_types[i] == Needy)
+      info.total_needy_modules++;
+  }
   return info;
 }
 
@@ -194,10 +210,14 @@ void solveAttemptRecv(SolveAttempt info, const uint8_t *mac) {
     strike();
     return;
   }
+  if (info.fail) {
+    fail();
+    return;
+  }
   modules_solved[module_index] = true;
   bool is_solved = true;
   for (int i = 0; i < modules_connected; i++)
-    if (!modules_solved[i])
+    if (!modules_solved[i] && modules_types[i] == Puzzle)
       is_solved = false;
   if (is_solved)
     solve();
@@ -235,11 +255,13 @@ void startAckRecv(const uint8_t *mac) {
   _started = true;
 }
 
-void heartbeatAckRecv(const uint8_t *mac) {
+void heartbeatAckRecv(ModuleType type, const uint8_t *mac) {
   if (findMacAddress(mac) != -1)
     return;
   if (!tryConnectingToPeer(mac, &modules[modules_connected++]))
     modules_connected--;
+  else
+    modules_types[modules_connected - 1] = type;
 }
 
 void setMaxStrikes(int max_strikes) { _max_strikes = max_strikes; }
@@ -284,7 +306,7 @@ bool setup() {
   callbacks.resetAckCallback = resetAckRecv;
   callbacks.heartbeatAckCallback = heartbeatAckRecv;
 
-  if (!initProtocol(callbacks))
+  if (!initProtocol(callbacks, Main))
     return false;
 
   mac_address = WiFi.macAddress();

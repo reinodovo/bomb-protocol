@@ -1,13 +1,11 @@
 #include <map>
 #include <set>
 
-#include <puzzle_module.h>
+#include <module.h>
 #include <utils/debouncer.h>
 
-namespace PuzzleModule {
-const int STATUS_LIGHT_STRIKE_DURATION = 1000;
-const int STATUS_LIGHT_STRIKE_BLINK_DURATION = 1000;
-unsigned long _last_strike;
+namespace Module {
+ModuleType _type;
 
 const int BOMB_INFO_DELAY = 50;
 unsigned long _last_bomb_info_request = 0;
@@ -34,8 +32,6 @@ OnRestart onRestart = nullptr;
 OnStart onStart = nullptr;
 OnManualCode onManualCode = nullptr;
 
-StatusLight _light;
-
 void sendPendingSolveAttempts() {
   if (_pending_solve_attempts.empty())
     return;
@@ -43,29 +39,15 @@ void sendPendingSolveAttempts() {
   send(sa, _main_module.peer_addr);
 }
 
-void queueSolveAttempt(bool strike) {
-  SolveAttempt info;
-  info.strike = strike;
-  info.key = _solve_attempt_key_index++;
-  info.fail = false;
-  _pending_solve_attempts[info.key] = info;
+void queueSolveAttempt(SolveAttempt attempt) {
+  attempt.key = _solve_attempt_key_index++;
+  _pending_solve_attempts[attempt.key] = attempt;
 }
 
 void solveAttemptAckRecv(SolveAttemptAck ack) {
   if (_pending_solve_attempts.find(ack.key) == _pending_solve_attempts.end())
     return;
   _pending_solve_attempts.erase(ack.key);
-}
-
-void strike() {
-  _light.strike();
-  _last_strike = millis();
-  queueSolveAttempt(true);
-}
-
-void solve() {
-  _solved = true;
-  queueSolveAttempt(false);
 }
 
 void withBombInfo(BombInfoCallback callback) {
@@ -80,14 +62,14 @@ void bombInfoRecv(BombInfo info) {
   }
 }
 
-ModuleStatus status() {
+Status status() {
   if (!_connected)
-    return ModuleStatus::Connecting;
+    return Status::Connecting;
   if (!_started)
-    return ModuleStatus::Connected;
+    return Status::Connected;
   if (!_solved)
-    return ModuleStatus::Started;
-  return ModuleStatus::Solved;
+    return Status::Started;
+  return Status::Solved;
 }
 
 void connectionInfoRecv(Connection info, const uint8_t *mac) {
@@ -119,12 +101,6 @@ void resetRecv() {
   send(RESET_ACK, _main_module.peer_addr);
 }
 
-void updateStatusLight() {
-  if (millis() - _last_strike < STATUS_LIGHT_STRIKE_BLINK_DURATION)
-    return;
-  _light.update(status());
-}
-
 void updateManualCode() {
   if (onManualCode != nullptr &&
       millis() - _last_bomb_info_request > BOMB_INFO_DELAY) {
@@ -139,7 +115,6 @@ void updateManualCode() {
 }
 
 void update() {
-  updateStatusLight();
   _update_manual_code_debouncer(updateManualCode);
   if (!_bomb_info_callbacks_map.empty())
     _bomb_info_debouncer([&]() {
@@ -150,10 +125,10 @@ void update() {
   _solve_attempt_debouncer([&]() { sendPendingSolveAttempts(); });
 }
 
-bool setup(StatusLight light) {
+bool setup(ModuleType type) {
   initialize();
 
-  _light = light;
+  _type = type;
 
   Callbacks callbacks;
   callbacks.bombInfoCallback = bombInfoRecv;
@@ -162,51 +137,11 @@ bool setup(StatusLight light) {
   callbacks.startCallback = startRecv;
   callbacks.resetCallback = resetRecv;
 
-  if (!initProtocol(callbacks, Puzzle))
+  if (!initProtocol(callbacks, _type))
     return false;
 
   _mac_address = WiFi.macAddress();
 
   return true;
 }
-
-StatusLight::StatusLight(int redPin, int greenPin)
-    : _redPin(redPin), _greenPin(greenPin) {
-  pinMode(redPin, OUTPUT);
-  pinMode(greenPin, OUTPUT);
-}
-
-StatusLight::StatusLight(int redPin, int greenPin, bool invert = true)
-    : _redPin(redPin), _greenPin(greenPin), _invert(invert) {
-  pinMode(_redPin, OUTPUT);
-  pinMode(_greenPin, OUTPUT);
-}
-
-void StatusLight::setPin(int pin, bool state) {
-  if (_invert)
-    state = !state;
-  digitalWrite(pin, state);
-}
-
-void StatusLight::update(ModuleStatus status) {
-  if (status == ModuleStatus::Connecting) {
-    bool state = (millis() / STATUS_LIGHT_STRIKE_BLINK_DURATION) % 2;
-    setPin(_redPin, state);
-    setPin(_greenPin, state);
-  } else if (status == ModuleStatus::Connected) {
-    setPin(_redPin, HIGH);
-    setPin(_greenPin, HIGH);
-  } else if (status == ModuleStatus::Started) {
-    setPin(_redPin, LOW);
-    setPin(_greenPin, LOW);
-  } else if (status == ModuleStatus::Solved) {
-    setPin(_redPin, LOW);
-    setPin(_greenPin, HIGH);
-  }
-}
-
-void StatusLight::strike() {
-  setPin(_redPin, HIGH);
-  setPin(_greenPin, LOW);
-}
-} // namespace PuzzleModule
+} // namespace Module

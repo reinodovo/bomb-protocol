@@ -8,13 +8,16 @@ enum class ModuleStatus { Connecting, Connected, Started, Solved };
 
 class StatusLight {
 public:
-  StatusLight(int redPin, int greenPin);
   StatusLight(){};
+  StatusLight(int redPin, int greenPin);
+  StatusLight(int redPin, int greenPin, bool invert);
   void update(ModuleStatus status);
   void strike();
 
 private:
+  void setPin(int pin, bool state);
   int _redPin, _greenPin;
+  bool _invert;
 };
 
 enum class LightStatus {
