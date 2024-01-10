@@ -171,7 +171,7 @@ bool setup(StatusLight light) {
 }
 
 StatusLight::StatusLight(int redPin, int greenPin)
-    : _redPin(redPin), _greenPin(greenPin) {
+    : _redPin(redPin), _greenPin(greenPin), _invert(true) {
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
 }
