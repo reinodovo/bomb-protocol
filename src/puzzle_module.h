@@ -2,16 +2,15 @@
 #define PUZZLE_MODULE_H
 
 #include <bomb_protocol.h>
+#include <module.h>
 
 namespace PuzzleModule {
-enum class ModuleStatus { Connecting, Connected, Started, Solved };
-
 class StatusLight {
 public:
   StatusLight(){};
   StatusLight(int redPin, int greenPin);
   StatusLight(int redPin, int greenPin, bool invert);
-  void update(ModuleStatus status);
+  void update(Module::Status status);
   void strike();
 
 private:
@@ -36,11 +35,9 @@ extern OnRestart onRestart;
 extern OnStart onStart;
 extern OnManualCode onManualCode;
 
-bool setup(StatusLight light);
-void withBombInfo(BombInfoCallback callback);
-ModuleStatus status();
 void solve();
 void strike();
+bool setup(StatusLight light);
 void update();
 } // namespace PuzzleModule
 

@@ -114,6 +114,8 @@ void updateManualCode() {
   }
 }
 
+void solve() { _solved = true; }
+
 void update() {
   _update_manual_code_debouncer(updateManualCode);
   if (!_bomb_info_callbacks_map.empty())

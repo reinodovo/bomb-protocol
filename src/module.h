@@ -19,6 +19,7 @@ void withBombInfo(BombInfoCallback callback);
 void queueSolveAttempt(SolveAttempt attempt);
 Status status();
 void update();
+void solve();
 }; // namespace Module
 
 #endif // MODULE_H
