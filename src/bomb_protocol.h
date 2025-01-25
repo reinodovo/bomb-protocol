@@ -57,6 +57,7 @@ enum MessageType {
   RESET_ACK,
   HEARTBEAT,
   HEARTBEAT_ACK,
+  START_OTA,
 };
 
 using ConnectionCallback =

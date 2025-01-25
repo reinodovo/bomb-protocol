@@ -1,4 +1,7 @@
 #include <bomb_protocol.h>
+#include <ota/ota_server.h>
+
+String version = "v0.1.0";
 
 Callbacks _callbacks;
 ModuleType _type;
@@ -106,6 +109,10 @@ void onHeartbeatAckRecv(const uint8_t *mac, const uint8_t *incoming_data,
   _callbacks.heartbeatAckCallback(type, mac);
 }
 
+void onStartOTARecv(const uint8_t *mac, const uint8_t *incoming_data, int len) {
+  OTAServer::start(version);
+}
+
 void onDataRecv(const uint8_t *mac, const uint8_t *incoming_data, int len) {
   MessageType type = getMessageInfo(incoming_data, len);
   switch (type) {
@@ -142,6 +149,9 @@ void onDataRecv(const uint8_t *mac, const uint8_t *incoming_data, int len) {
   case HEARTBEAT_ACK:
     onHeartbeatAckRecv(mac, incoming_data, len);
     break;
+  case START_OTA:
+    onStartOTARecv(mac, incoming_data, len);
+    break;
   default:
     break;
   }
@@ -172,6 +182,8 @@ MessageType getMessageInfo(const uint8_t *incoming_data, int len) {
     return HEARTBEAT;
   case HEARTBEAT_ACK:
     return HEARTBEAT_ACK;
+  case START_OTA:
+    return START_OTA;
   default:
     return UNKNOWN;
   }
