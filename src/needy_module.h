@@ -8,7 +8,7 @@ namespace NeedyModule {
 struct NeedyDisplay {};
 
 void fail();
-bool setup();
+bool setup(String name);
 void update();
 
 }; // namespace NeedyModule

@@ -14,7 +14,7 @@ extern OnRestart onRestart;
 extern OnStart onStart;
 extern OnManualCode onManualCode;
 
-bool setup(ModuleType type);
+bool setup(String name, ModuleType type);
 void withBombInfo(BombInfoCallback callback);
 void queueSolveAttempt(SolveAttempt attempt);
 Status status();

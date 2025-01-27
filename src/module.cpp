@@ -2,6 +2,7 @@
 #include <set>
 
 #include <module.h>
+#include <ota.h>
 #include <utils/debouncer.h>
 
 namespace Module {
@@ -117,6 +118,8 @@ void updateManualCode() {
 void solve() { _solved = true; }
 
 void update() {
+  OTA::update();
+
   _update_manual_code_debouncer(updateManualCode);
   if (!_bomb_info_callbacks_map.empty())
     _bomb_info_debouncer([&]() {
@@ -127,7 +130,7 @@ void update() {
   _solve_attempt_debouncer([&]() { sendPendingSolveAttempts(); });
 }
 
-bool setup(ModuleType type) {
+bool setup(String name, ModuleType type) {
   initialize();
 
   _type = type;
@@ -139,7 +142,7 @@ bool setup(ModuleType type) {
   callbacks.startCallback = startRecv;
   callbacks.resetCallback = resetRecv;
 
-  if (!initProtocol(callbacks, _type))
+  if (!initProtocol(name, callbacks, _type))
     return false;
 
   _mac_address = WiFi.macAddress();

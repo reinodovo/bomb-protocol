@@ -57,7 +57,6 @@ enum MessageType {
   RESET_ACK,
   HEARTBEAT,
   HEARTBEAT_ACK,
-  START_OTA,
 };
 
 using ConnectionCallback =
@@ -90,7 +89,7 @@ typedef struct Callbacks {
   HeartbeatAckCallback heartbeatAckCallback;
 } Callbacks;
 
-bool initProtocol(Callbacks, ModuleType);
+bool initProtocol(String, Callbacks, ModuleType);
 
 bool tryConnectingToPeer(const uint8_t *mac, esp_now_peer_info_t *peer);
 

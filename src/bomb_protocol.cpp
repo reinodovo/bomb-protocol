@@ -1,20 +1,29 @@
 #include <bomb_protocol.h>
-#include <ota/ota_server.h>
+#include <ota.h>
 
-String version = "v0.1.0";
+String version = "v0.1.1";
+String _module_name = "Unknown";
 
 Callbacks _callbacks;
 ModuleType _type;
+bool _started = false;
 
 void onDataRecv(const uint8_t *mac, const uint8_t *incoming_data, int len);
 MessageType getMessageInfo(const uint8_t *incoming_data, int len);
 
-bool initProtocol(Callbacks callbacks, ModuleType type) {
+bool initProtocol(String module_name, Callbacks callbacks, ModuleType type) {
+  _module_name = module_name;
+  if (OTA::shouldStart()) {
+    OTA::start(version, module_name);
+    return true;
+  }
+
   _callbacks = callbacks;
   _type = type;
   WiFi.mode(WIFI_STA);
   if (esp_now_init() != ESP_OK)
     return false;
+  _started = true;
   esp_now_register_recv_cb(onDataRecv);
   return true;
 }
@@ -109,10 +118,6 @@ void onHeartbeatAckRecv(const uint8_t *mac, const uint8_t *incoming_data,
   _callbacks.heartbeatAckCallback(type, mac);
 }
 
-void onStartOTARecv(const uint8_t *mac, const uint8_t *incoming_data, int len) {
-  OTAServer::start(version);
-}
-
 void onDataRecv(const uint8_t *mac, const uint8_t *incoming_data, int len) {
   MessageType type = getMessageInfo(incoming_data, len);
   switch (type) {
@@ -149,9 +154,6 @@ void onDataRecv(const uint8_t *mac, const uint8_t *incoming_data, int len) {
   case HEARTBEAT_ACK:
     onHeartbeatAckRecv(mac, incoming_data, len);
     break;
-  case START_OTA:
-    onStartOTARecv(mac, incoming_data, len);
-    break;
   default:
     break;
   }
@@ -182,14 +184,14 @@ MessageType getMessageInfo(const uint8_t *incoming_data, int len) {
     return HEARTBEAT;
   case HEARTBEAT_ACK:
     return HEARTBEAT_ACK;
-  case START_OTA:
-    return START_OTA;
   default:
     return UNKNOWN;
   }
 }
 
 esp_err_t send(Connection info, const uint8_t *mac) {
+  if (!_started)
+    return ESP_FAIL;
   uint8_t message[sizeof(info) + 1];
   message[0] = CONNECTION;
   memcpy(message + 1, &info, sizeof(info));
@@ -197,6 +199,8 @@ esp_err_t send(Connection info, const uint8_t *mac) {
 }
 
 esp_err_t send(BombInfo info, const uint8_t *mac) {
+  if (!_started)
+    return ESP_FAIL;
   uint8_t message[sizeof(info) + 1];
   message[0] = BOMB_INFO;
   memcpy(message + 1, &info, sizeof(info));
@@ -204,6 +208,8 @@ esp_err_t send(BombInfo info, const uint8_t *mac) {
 }
 
 esp_err_t send(BombInfoRequest info, const uint8_t *mac) {
+  if (!_started)
+    return ESP_FAIL;
   uint8_t message[sizeof(info) + 1];
   message[0] = BOMB_INFO_REQUEST;
   memcpy(message + 1, &info, sizeof(info));
@@ -211,12 +217,16 @@ esp_err_t send(BombInfoRequest info, const uint8_t *mac) {
 }
 
 esp_err_t send(MessageType type, const uint8_t *mac) {
+  if (!_started)
+    return ESP_FAIL;
   uint8_t message[1];
   message[0] = type;
   return esp_now_send(mac, message, sizeof(message));
 }
 
 esp_err_t send(SolveAttempt info, const uint8_t *mac) {
+  if (!_started)
+    return ESP_FAIL;
   uint8_t message[sizeof(info) + 1];
   message[0] = SOLVE_ATTEMPT;
   memcpy(message + 1, &info, sizeof(info));
@@ -224,6 +234,8 @@ esp_err_t send(SolveAttempt info, const uint8_t *mac) {
 }
 
 esp_err_t send(SolveAttemptAck info, const uint8_t *mac) {
+  if (!_started)
+    return ESP_FAIL;
   uint8_t message[sizeof(info) + 1];
   message[0] = SOLVE_ATTEMPT_ACK;
   memcpy(message + 1, &info, sizeof(info));
@@ -231,6 +243,8 @@ esp_err_t send(SolveAttemptAck info, const uint8_t *mac) {
 }
 
 esp_err_t send(MessageType type, ModuleType module_type, const uint8_t *mac) {
+  if (!_started)
+    return ESP_FAIL;
   uint8_t message[2];
   message[0] = type;
   message[1] = (uint8_t)module_type;

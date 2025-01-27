@@ -38,9 +38,9 @@ void update() {
   Module::update();
 }
 
-bool setup(StatusLight light) {
+bool setup(String name, StatusLight light) {
   _light = light;
-  return Module::setup(ModuleType::Puzzle);
+  return Module::setup(name, ModuleType::Puzzle);
 }
 
 StatusLight::StatusLight(int redPin, int greenPin)

@@ -1,5 +1,6 @@
 #include <main_module.h>
 #include <map>
+#include <ota.h>
 #include <set>
 #include <utils/debouncer.h>
 
@@ -306,7 +307,7 @@ bool setup() {
   callbacks.resetAckCallback = resetAckRecv;
   callbacks.heartbeatAckCallback = heartbeatAckRecv;
 
-  if (!initProtocol(callbacks, Main))
+  if (!initProtocol("Main Module", callbacks, Main))
     return false;
 
   mac_address = WiFi.macAddress();
@@ -334,6 +335,8 @@ esp_err_t broadcastMacAddress() {
 }
 
 void update() {
+  OTA::update();
+
   updateMissingTime();
   broadcast_debouncer([&]() { broadcastMacAddress(); });
   if (onStartCountdown())
