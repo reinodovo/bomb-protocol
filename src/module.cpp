@@ -64,6 +64,8 @@ void bombInfoRecv(BombInfo info) {
 }
 
 Status status() {
+  if (OTA::running())
+    return Status::OTA;
   if (!_connected)
     return Status::Connecting;
   if (!_started)

@@ -1,7 +1,7 @@
 #include <bomb_protocol.h>
 #include <ota.h>
 
-String version = "v0.1.1";
+String version = "v0.1.2";
 String _module_name = "Unknown";
 
 Callbacks _callbacks;

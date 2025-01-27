@@ -7,6 +7,8 @@
 namespace PuzzleModule {
 const int STATUS_LIGHT_STRIKE_DURATION = 1000;
 const int STATUS_LIGHT_STRIKE_BLINK_DURATION = 1000;
+const int STATUS_LIGHT_CONNECTING_BLINK_DURATION = 1000;
+const int STATUS_LIGHT_OTA_BLINK_DURATION = 500;
 unsigned long _last_strike;
 
 StatusLight _light;
@@ -63,7 +65,7 @@ void StatusLight::setPin(int pin, bool state) {
 
 void StatusLight::update(Module::Status status) {
   if (status == Module::Status::Connecting) {
-    bool state = (millis() / STATUS_LIGHT_STRIKE_BLINK_DURATION) % 2;
+    bool state = (millis() / STATUS_LIGHT_CONNECTING_BLINK_DURATION) % 2;
     setPin(_redPin, state);
     setPin(_greenPin, state);
   } else if (status == Module::Status::Connected) {
@@ -75,6 +77,10 @@ void StatusLight::update(Module::Status status) {
   } else if (status == Module::Status::Solved) {
     setPin(_redPin, LOW);
     setPin(_greenPin, HIGH);
+  } else if (status == Module::Status::OTA) {
+    bool state = (millis() / STATUS_LIGHT_OTA_BLINK_DURATION) % 2;
+    setPin(_redPin, LOW);
+    setPin(_greenPin, state);
   }
 }
 

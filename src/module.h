@@ -4,7 +4,7 @@
 #include <bomb_protocol.h>
 
 namespace Module {
-enum class Status { Connecting, Connected, Started, Solved };
+enum class Status { Connecting, Connected, Started, Solved, OTA };
 
 using OnRestart = std::function<void()>;
 using OnStart = std::function<void()>;
