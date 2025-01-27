@@ -7,6 +7,7 @@ namespace OTA {
 bool shouldStart();
 void update();
 void start(String version, String name);
+bool running();
 }; // namespace OTA
 
 #endif // OTA_H

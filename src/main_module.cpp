@@ -310,6 +310,9 @@ bool setup() {
   if (!initProtocol("Main Module", callbacks, Main))
     return false;
 
+  if (OTA::running())
+    return true;
+
   mac_address = WiFi.macAddress();
 
   uint8_t broadcastAddress[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};

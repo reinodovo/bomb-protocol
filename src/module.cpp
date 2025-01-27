@@ -145,6 +145,9 @@ bool setup(String name, ModuleType type) {
   if (!initProtocol(name, callbacks, _type))
     return false;
 
+  if (OTA::running())
+    return true;
+
   _mac_address = WiFi.macAddress();
 
   return true;

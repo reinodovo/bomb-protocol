@@ -5,16 +5,18 @@
 #include <esp_now.h>
 #include <ota.h>
 
+namespace OTA {
 const char *POWER_CYCLE_COUNT_KEY = "powerCycleCount";
 const unsigned long POWER_CYCLE_TIME_THRESHOLD = 3000;
 const int NUMBER_OF_POWER_CYCLES_FOR_OTA = 3;
 
-namespace OTA {
 AsyncWebServer server(80);
 Preferences preferences;
 bool _could_be_power_cycle = true;
+bool _running = false;
 
 void start(String version, String name) {
+  _running = true;
   Serial.begin(9600);
   Serial.println("Starting OTA server");
 
@@ -72,7 +74,6 @@ bool shouldStart() {
   int powerCycleCount = preferences.getInt(POWER_CYCLE_COUNT_KEY, 0);
   powerCycleCount++;
   if (powerCycleCount >= NUMBER_OF_POWER_CYCLES_FOR_OTA) {
-    reset();
     return true;
   }
   preferences.putInt(POWER_CYCLE_COUNT_KEY, powerCycleCount);
@@ -87,4 +88,6 @@ void update() {
     _could_be_power_cycle = false;
   }
 }
+
+bool running() { return _running; }
 }; // namespace OTA
