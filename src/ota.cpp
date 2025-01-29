@@ -30,7 +30,7 @@ void start(String version, String name) {
   server.on("/", HTTP_GET, [version, name](AsyncWebServerRequest *request) {
     request->send(200, "text/html",
                   "<h1>KTANE OTA Server</h1>"
-                  "<p>Bomb Protocol Version: " +
+                  "<p>Version: " +
                       version + "</p><p>Module Name: " + name +
                       "<form method='POST' action='/update' "
                       "enctype='multipart/form-data'>"

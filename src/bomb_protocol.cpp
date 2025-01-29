@@ -1,8 +1,11 @@
 #include <bomb_protocol.h>
 #include <ota.h>
 
-String version = "v0.1.2";
 String _module_name = "Unknown";
+
+#ifndef APP_VERSION
+#define APP_VERSION "Unknown"
+#endif
 
 Callbacks _callbacks;
 ModuleType _type;
@@ -14,7 +17,7 @@ MessageType getMessageInfo(const uint8_t *incoming_data, int len);
 bool initProtocol(String module_name, Callbacks callbacks, ModuleType type) {
   _module_name = module_name;
   if (OTA::shouldStart()) {
-    OTA::start(version, module_name);
+    OTA::start(APP_VERSION, module_name);
     return true;
   }
 
