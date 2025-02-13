@@ -192,33 +192,6 @@ MessageType getMessageInfo(const uint8_t *incoming_data, int len) {
   }
 }
 
-esp_err_t send(Connection info, const uint8_t *mac) {
-  if (!_started)
-    return ESP_FAIL;
-  uint8_t message[sizeof(info) + 1];
-  message[0] = CONNECTION;
-  memcpy(message + 1, &info, sizeof(info));
-  return esp_now_send(mac, message, sizeof(message));
-}
-
-esp_err_t send(BombInfo info, const uint8_t *mac) {
-  if (!_started)
-    return ESP_FAIL;
-  uint8_t message[sizeof(info) + 1];
-  message[0] = BOMB_INFO;
-  memcpy(message + 1, &info, sizeof(info));
-  return esp_now_send(mac, message, sizeof(message));
-}
-
-esp_err_t send(BombInfoRequest info, const uint8_t *mac) {
-  if (!_started)
-    return ESP_FAIL;
-  uint8_t message[sizeof(info) + 1];
-  message[0] = BOMB_INFO_REQUEST;
-  memcpy(message + 1, &info, sizeof(info));
-  return esp_now_send(mac, message, sizeof(message));
-}
-
 esp_err_t send(MessageType type, const uint8_t *mac) {
   if (!_started)
     return ESP_FAIL;
@@ -227,29 +200,36 @@ esp_err_t send(MessageType type, const uint8_t *mac) {
   return esp_now_send(mac, message, sizeof(message));
 }
 
-esp_err_t send(SolveAttempt info, const uint8_t *mac) {
+template <typename T>
+esp_err_t send(MessageType type, const T &info, const uint8_t *mac) {
   if (!_started)
     return ESP_FAIL;
   uint8_t message[sizeof(info) + 1];
-  message[0] = SOLVE_ATTEMPT;
+  message[0] = type;
   memcpy(message + 1, &info, sizeof(info));
   return esp_now_send(mac, message, sizeof(message));
+}
+
+esp_err_t send(Connection info, const uint8_t *mac) {
+  return send(CONNECTION, info, mac);
+}
+
+esp_err_t send(BombInfoRequest info, const uint8_t *mac) {
+  return send(BOMB_INFO_REQUEST, info, mac);
+}
+
+esp_err_t send(BombInfo info, const uint8_t *mac) {
+  return send(BOMB_INFO, info, mac);
+}
+
+esp_err_t send(SolveAttempt info, const uint8_t *mac) {
+  return send(SOLVE_ATTEMPT, info, mac);
 }
 
 esp_err_t send(SolveAttemptAck info, const uint8_t *mac) {
-  if (!_started)
-    return ESP_FAIL;
-  uint8_t message[sizeof(info) + 1];
-  message[0] = SOLVE_ATTEMPT_ACK;
-  memcpy(message + 1, &info, sizeof(info));
-  return esp_now_send(mac, message, sizeof(message));
+  return send(SOLVE_ATTEMPT_ACK, info, mac);
 }
 
 esp_err_t send(MessageType type, ModuleType module_type, const uint8_t *mac) {
-  if (!_started)
-    return ESP_FAIL;
-  uint8_t message[2];
-  message[0] = type;
-  message[1] = (uint8_t)module_type;
-  return esp_now_send(mac, message, sizeof(message));
+  return send(type, module_type, mac);
 }
