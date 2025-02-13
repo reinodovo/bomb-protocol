@@ -29,6 +29,7 @@ Debouncer _solve_attempt_debouncer(SOLVE_ATTEMPT_DELAY);
 
 int _code;
 
+String name = "Unknown";
 OnRestart onRestart = nullptr;
 OnStart onStart = nullptr;
 OnManualCode onManualCode = nullptr;
@@ -132,7 +133,7 @@ void update() {
   _solve_attempt_debouncer([&]() { sendPendingSolveAttempts(); });
 }
 
-bool setup(String name, ModuleType type) {
+bool setup(ModuleType type) {
   initialize();
 
   _type = type;

@@ -10,11 +10,13 @@ using OnRestart = std::function<void()>;
 using OnStart = std::function<void()>;
 using OnManualCode = std::function<void(int)>;
 
+extern String name;
 extern OnRestart onRestart;
 extern OnStart onStart;
 extern OnManualCode onManualCode;
 
-bool setup(String name, ModuleType type);
+void setName(String name);
+bool setup(ModuleType type);
 void withBombInfo(BombInfoCallback callback);
 void queueSolveAttempt(SolveAttempt attempt);
 Status status();

@@ -8,7 +8,7 @@ void fail() {
   Module::queueSolveAttempt(attempt);
 }
 
-bool setup(String name) { return Module::setup(name, Needy); }
+bool setup() { return Module::setup(Needy); }
 
 void update() { Module::update(); }
 }; // namespace NeedyModule

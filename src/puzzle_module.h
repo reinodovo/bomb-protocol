@@ -27,9 +27,11 @@ enum class LightStatus {
   Yellow,
 };
 
+extern StatusLight statusLight;
+
 void solve();
 void strike();
-bool setup(String name, StatusLight light);
+bool setup();
 void update();
 } // namespace PuzzleModule
 

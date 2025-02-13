@@ -11,10 +11,10 @@ const int STATUS_LIGHT_CONNECTING_BLINK_DURATION = 1000;
 const int STATUS_LIGHT_OTA_BLINK_DURATION = 500;
 unsigned long _last_strike;
 
-StatusLight _light;
+StatusLight statusLight;
 
 void strike() {
-  _light.strike();
+  statusLight.strike();
   _last_strike = millis();
   SolveAttempt attempt;
   attempt.fail = false;
@@ -32,7 +32,7 @@ void solve() {
 void updateStatusLight() {
   if (millis() - _last_strike < STATUS_LIGHT_STRIKE_BLINK_DURATION)
     return;
-  _light.update(Module::status());
+  statusLight.update(Module::status());
 }
 
 void update() {
@@ -40,10 +40,7 @@ void update() {
   Module::update();
 }
 
-bool setup(String name, StatusLight light) {
-  _light = light;
-  return Module::setup(name, ModuleType::Puzzle);
-}
+bool setup() { return Module::setup(ModuleType::Puzzle); }
 
 StatusLight::StatusLight(int redPin, int greenPin)
     : _redPin(redPin), _greenPin(greenPin), _invert(true) {
