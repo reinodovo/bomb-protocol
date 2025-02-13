@@ -1,6 +1,6 @@
 {
   "name": "BombProtocol",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Protocol for communication between KTANE modules",
   "keywords": "ktane",
   "repository":
