@@ -46,9 +46,9 @@ const int START_DEBOUNCE_QUICK_DELAY = 50;
 const int START_DEBOUNCE_SLOW_DELAY = 500;
 Debouncer start_debouncer_quick(START_DEBOUNCE_QUICK_DELAY);
 Debouncer start_debouncer_slow(START_DEBOUNCE_SLOW_DELAY);
-const int RESET_DEBOUNCE_DELAY = 50;
+const int RESET_DEBOUNCE_DELAY = 100;
 Debouncer reset_debouncer(RESET_DEBOUNCE_DELAY);
-const int HEARTBEAT_DEBOUNCE_DELAY = 50;
+const int HEARTBEAT_DEBOUNCE_DELAY = 100;
 Debouncer heartbeat_debouncer(HEARTBEAT_DEBOUNCE_DELAY);
 
 std::map<int, std::set<int>> _pending_solve_attempts;

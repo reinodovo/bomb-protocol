@@ -6,6 +6,18 @@
 #include <esp_now.h>
 #include <functional>
 
+#ifndef APP_VERSION
+#define APP_VERSION "Unknown"
+#endif
+
+#ifndef DEBUG
+#define DEBUG false
+#endif
+
+#ifndef BAUD_RATE
+#define BAUD_RATE 9600
+#endif
+
 const int MAC_ADDRESS_SIZE = 18;
 
 enum ModuleType {

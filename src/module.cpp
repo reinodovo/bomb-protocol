@@ -77,15 +77,21 @@ Status status() {
 }
 
 void connectionInfoRecv(Connection info, const uint8_t *mac) {
-  if (!_connected && tryConnectingToPeer(mac, &_main_module))
+  if (!_connected && tryConnectingToPeer(mac, &_main_module)) {
+    if (DEBUG)
+      Serial.println("Connected to main module");
     _connected = true;
+  }
 }
 
 void startRecv() {
   if (_code == -1)
     return;
-  if (!_started && onStart != nullptr)
+  if (!_started && onStart != nullptr) {
+    if (DEBUG)
+      Serial.println("Starting module");
     onStart();
+  }
   _started = true;
   send(START_ACK, _main_module.peer_addr);
 }

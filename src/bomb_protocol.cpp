@@ -3,10 +3,6 @@
 
 String _module_name = "Unknown";
 
-#ifndef APP_VERSION
-#define APP_VERSION "Unknown"
-#endif
-
 Callbacks _callbacks;
 ModuleType _type;
 bool _started = false;
@@ -15,8 +11,14 @@ void onDataRecv(const uint8_t *mac, const uint8_t *incoming_data, int len);
 MessageType getMessageInfo(const uint8_t *incoming_data, int len);
 
 bool initProtocol(String module_name, Callbacks callbacks, ModuleType type) {
+  if (DEBUG) {
+    Serial.begin(BAUD_RATE);
+    Serial.println("Initializing protocol");
+  }
   _module_name = module_name;
   if (OTA::shouldStart()) {
+    if (DEBUG)
+      Serial.println("Starting OTA");
     OTA::start(APP_VERSION, module_name);
     return true;
   }
@@ -26,6 +28,8 @@ bool initProtocol(String module_name, Callbacks callbacks, ModuleType type) {
   WiFi.mode(WIFI_STA);
   if (esp_now_init() != ESP_OK)
     return false;
+  if (DEBUG)
+    Serial.println("ESP Now initialized");
   _started = true;
   esp_now_register_recv_cb(onDataRecv);
   return true;
