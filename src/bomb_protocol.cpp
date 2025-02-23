@@ -231,5 +231,5 @@ esp_err_t send(SolveAttemptAck info, const uint8_t *mac) {
 }
 
 esp_err_t send(MessageType type, ModuleType module_type, const uint8_t *mac) {
-  return send(type, module_type, mac);
+  return send<ModuleType>(type, module_type, mac);
 }
